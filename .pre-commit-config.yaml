@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: npm-check
+        name: npm run check
+        entry: npm run check
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]

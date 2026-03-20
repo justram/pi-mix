@@ -1,0 +1,72 @@
+{
+  "name": "@justram/pi-mix",
+  "version": "0.1.0",
+  "description": "Pi UI extension with Pi-mix themes, shell chrome, editor chrome, and /pimix settings",
+  "keywords": [
+    "extension",
+    "pi",
+    "pi-agent",
+    "pi-mix",
+    "pi-package",
+    "pimix",
+    "theme"
+  ],
+  "license": "MIT",
+  "author": "Jheng-Hong Yang",
+  "files": [
+    "entrypoints/**/*.ts",
+    "src/bundle/**/*.ts",
+    "src/core/**/*.ts",
+    "src/editor/**/*.ts",
+    "src/shell/**/*.ts",
+    "src/theme/**/*.ts",
+    "themes",
+    "docs",
+    "README.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "exports": {
+    ".": "./entrypoints/index.ts",
+    "./theme": "./entrypoints/theme.ts",
+    "./shell": "./entrypoints/shell.ts",
+    "./editor": "./entrypoints/editor.ts",
+    "./core": "./entrypoints/core.ts"
+  },
+  "scripts": {
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "lint": "oxlint --type-aware --tsconfig tsconfig.json .",
+    "typecheck": "tsgo --noEmit -p tsconfig.json",
+    "test": "echo 'No test suite is currently committed. Rebuild pending.'",
+    "check": "npm run format:check && npm run lint && npm run typecheck",
+    "pack:dry": "npm pack --dry-run"
+  },
+  "devDependencies": {
+    "@mariozechner/pi-agent-core": "^0.61.0",
+    "@mariozechner/pi-ai": "^0.61.0",
+    "@mariozechner/pi-coding-agent": "^0.61.0",
+    "@mariozechner/pi-tui": "^0.61.0",
+    "@types/node": "^25.3.5",
+    "@typescript/native-preview": "7.0.0-dev.20260120.1",
+    "oxfmt": "^0.36.0",
+    "oxlint": "^1.49.0",
+    "oxlint-tsgolint": "^0.16.0",
+    "tsx": "^4.20.5"
+  },
+  "peerDependencies": {
+    "@mariozechner/pi-agent-core": "^0.61.0",
+    "@mariozechner/pi-ai": "^0.61.0",
+    "@mariozechner/pi-coding-agent": "^0.61.0",
+    "@mariozechner/pi-tui": "^0.61.0"
+  },
+  "packageManager": "npm@11.9.0",
+  "pi": {
+    "extensions": [
+      "./entrypoints/index.ts"
+    ],
+    "themes": [
+      "./themes"
+    ]
+  }
+}
