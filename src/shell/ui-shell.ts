@@ -291,7 +291,7 @@ export function applyPiMixUiShell(
                 leftPad +
                 border("│") +
                 fitVisible(
-                  ` ${theme.fg("dim", ">_")} ${theme.bold("Pi-mix")} ${theme.fg("dim", `(v${PI_VERSION})`)}`,
+                  ` ${theme.fg("dim", ">_")} ${theme.bold("Pi-MIX")} ${theme.fg("dim", `(v${PI_VERSION})`)}`,
                   boxWidth - 2,
                 ) +
                 border("│");
@@ -328,7 +328,7 @@ export function applyPiMixUiShell(
     invalidate() {},
     render(width: number): string[] {
       return profileRender("pimix.footer.render", () => {
-        const branch = footerData.getGitBranch();
+        const branch = footerData.getGitBranch() ?? undefined;
         const left = theme.fg("dim", buildFooterPathLabel(ctx.cwd, branch));
         const right = buildFooterRightStatus(theme, ctx, autoCompactionMode);
         const totalWidth = Math.max(1, width);

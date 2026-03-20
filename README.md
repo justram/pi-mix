@@ -4,6 +4,7 @@
 
 [![License](https://img.shields.io/badge/license-MIT-111111?style=flat-square)](./LICENSE)
 [![Pi package](https://img.shields.io/badge/pi-package-111111?style=flat-square)](https://pi.dev)
+
 _Pi-mix is my UI preset inspired by Pi-dex_
 
 </div>
@@ -75,4 +76,3 @@ npm run pack:dry
 - Pi-mix targets the extension boundary, so some Codex-like UI details are approximations rather than renderer-core replacements.
 - Appearance settings are documented in `docs/appearance-settings.md`.
 - Internal composition details are documented in `docs/module-architecture.md`.
-
