@@ -44,8 +44,25 @@ function getContextUsageCacheKey(ctx: ExtensionContext): string {
   return `${scope}|model:${provider}/${modelId}`;
 }
 
+function normalizeContextUsage(ctx: ExtensionContext, usage: ContextUsage): ContextUsage {
+  const modelContextWindow = ctx.model?.contextWindow;
+  if (!usage || modelContextWindow == null || modelContextWindow <= 0) {
+    return usage;
+  }
+
+  if (usage.contextWindow === modelContextWindow) {
+    return usage;
+  }
+
+  return {
+    tokens: usage.tokens,
+    contextWindow: modelContextWindow,
+    percent: usage.tokens == null ? null : (usage.tokens / modelContextWindow) * 100,
+  };
+}
+
 function readContextUsage(ctx: ExtensionContext): ContextUsage {
-  const usage = ctx.getContextUsage();
+  const usage = normalizeContextUsage(ctx, ctx.getContextUsage());
   usageCache.set(getContextUsageCacheKey(ctx), { usage });
   return usage;
 }

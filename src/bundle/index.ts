@@ -13,7 +13,6 @@ import {
   invalidateContextUsageCache,
   installPiMixShell,
   recordUsageCostFromMessageEnd,
-  refreshPiMixShellChrome,
 } from "../shell/index";
 import { installPiMixTheme } from "../theme/index";
 
@@ -78,7 +77,7 @@ export default function piMixExtension(pi: ExtensionAPI): void {
     invalidateContextUsageCache(ctx);
   };
   const refreshShellChrome = (ctx: ExtensionContext): void => {
-    refreshPiMixShellChrome(ctx, prefs, () => pi.getThinkingLevel());
+    installPiMixBundle(pi, ctx, prefs);
   };
   const refreshContextSensitiveChrome = (ctx: ExtensionContext): void => {
     resetContextUsage(ctx);
@@ -102,6 +101,10 @@ export default function piMixExtension(pi: ExtensionAPI): void {
   pi.on("session_start", async (_event, ctx) => {
     resetContextUsage(ctx);
     prefs = refreshPiMixBundle(pi, ctx);
+  });
+
+  pi.on("resources_discover", async (_event, ctx) => {
+    refreshContextSensitiveChrome(ctx);
   });
 
   pi.on("session_switch", async (_event, ctx) => {

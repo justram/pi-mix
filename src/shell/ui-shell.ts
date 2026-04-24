@@ -182,19 +182,31 @@ function getContextPercent(
   return (usage.tokens / usage.contextWindow) * 100;
 }
 
+export type FooterRightStatusSnapshot = {
+  contextWindow: number;
+  usedPercent: number | null | undefined;
+};
+
+function getFooterRightStatusSnapshot(ctx: ExtensionContext): FooterRightStatusSnapshot {
+  const usage = getContextUsageSnapshot(ctx);
+  return {
+    contextWindow: usage?.contextWindow ?? ctx.model?.contextWindow ?? 0,
+    usedPercent: getContextPercent(usage),
+  };
+}
+
 export function buildFooterRightStatus(
   theme: Theme,
-  ctx: ExtensionContext,
+  snapshot: FooterRightStatusSnapshot,
   autoCompactionMode: AutoCompactionMode,
 ): string {
   const autoCompaction = renderAutoCompactionStatus(theme, autoCompactionMode);
-  const usage = getContextUsageSnapshot(ctx);
-  const contextWindow = usage?.contextWindow ?? ctx.model?.contextWindow ?? 0;
+  const contextWindow = snapshot.contextWindow;
   if (contextWindow <= 0) {
     return `${theme.fg("dim", "--/--")} ${autoCompaction}`;
   }
 
-  const usedPercent = getContextPercent(usage);
+  const usedPercent = snapshot.usedPercent;
   const usedPercentValue = usedPercent ?? 0;
   const remainingPercentValue = Math.min(100, Math.max(0, 100 - usedPercentValue));
   const remainingPercentText = usedPercent === null ? "?" : remainingPercentValue.toFixed(1);
@@ -251,19 +263,18 @@ export function refreshPiMixShellChrome(
   prefs: PiMixPrefs,
   getThinkingLevel: () => ThinkingLevel,
 ): void {
+  const theme = ctx.ui.theme;
   const modelLabel = formatModelLabel(ctx.model, "no-model");
+  const thinkingLevel = getThinkingLevel();
+  const usageCostIndicator = buildUsageCostIndicator(theme, ctx);
   const borderTone = resolveEditorBorderTone(ctx);
+  const label = buildEditorBorderStatus(theme, modelLabel, thinkingLevel, usageCostIndicator);
+  const borderColor = (defaultBorderColor: (text: string) => string) =>
+    resolveEditorBorderColorFromTone(borderTone, theme, defaultBorderColor);
 
   configurePiMixEditorChrome({
-    getLabel: () =>
-      buildEditorBorderStatus(
-        ctx.ui.theme,
-        modelLabel,
-        getThinkingLevel(),
-        buildUsageCostIndicator(ctx.ui.theme, ctx),
-      ),
-    getBorderColor: (defaultBorderColor: (text: string) => string) =>
-      resolveEditorBorderColorFromTone(borderTone, ctx.ui.theme, defaultBorderColor),
+    getLabel: () => label,
+    getBorderColor: borderColor,
     paddingX: prefs.density === "comfortable" ? 1 : 0,
   });
 }
@@ -273,7 +284,10 @@ export function applyPiMixUiShell(
   prefs: PiMixPrefs,
   getThinkingLevel: () => ThinkingLevel,
 ): void {
-  const autoCompactionMode = getAutoCompactionMode(ctx.cwd);
+  const cwd = ctx.cwd;
+  const modelLabel = formatModelLabel(ctx.model, "no-model");
+  const autoCompactionMode = getAutoCompactionMode(cwd);
+  const footerRightStatusSnapshot = getFooterRightStatusSnapshot(ctx);
   refreshPiMixShellChrome(ctx, prefs, getThinkingLevel);
   ctx.ui.setToolsExpanded(!prefs.compactTools);
   ctx.ui.setHeader(
@@ -283,7 +297,6 @@ export function applyPiMixUiShell(
           render(width: number): string[] {
             return profileRender("pimix.header.render", () => {
               const boxWidth = width >= 54 ? 50 : Math.max(24, width);
-              const model = formatModelLabel(ctx.model, "no-model");
               const leftPad = "";
               const border = (text: string) => theme.fg("borderAccent", text);
               const top = leftPad + border(`╭${"─".repeat(Math.max(0, boxWidth - 2))}╮`);
@@ -299,13 +312,13 @@ export function applyPiMixUiShell(
               const line2 =
                 leftPad +
                 border("│") +
-                buildHeaderModelLine(theme, model, boxWidth - 2) +
+                buildHeaderModelLine(theme, modelLabel, boxWidth - 2) +
                 border("│");
               const line3 =
                 leftPad +
                 border("│") +
                 fitVisible(
-                  ` ${theme.fg("dim", "directory:".padEnd(11))}${basename(ctx.cwd)}`,
+                  ` ${theme.fg("dim", "directory:".padEnd(11))}${basename(cwd)}`,
                   boxWidth - 2,
                 ) +
                 border("│");
@@ -313,7 +326,7 @@ export function applyPiMixUiShell(
                 leftPad +
                 border("│") +
                 fitVisible(
-                  ` ${theme.fg("dim", "path:".padEnd(11))}${toTildePath(ctx.cwd)}`,
+                  ` ${theme.fg("dim", "path:".padEnd(11))}${toTildePath(cwd)}`,
                   boxWidth - 2,
                 ) +
                 border("│");
@@ -329,8 +342,8 @@ export function applyPiMixUiShell(
     render(width: number): string[] {
       return profileRender("pimix.footer.render", () => {
         const branch = footerData.getGitBranch() ?? undefined;
-        const left = theme.fg("dim", buildFooterPathLabel(ctx.cwd, branch));
-        const right = buildFooterRightStatus(theme, ctx, autoCompactionMode);
+        const left = theme.fg("dim", buildFooterPathLabel(cwd, branch));
+        const right = buildFooterRightStatus(theme, footerRightStatusSnapshot, autoCompactionMode);
         const totalWidth = Math.max(1, width);
         const leftWidth = visibleWidth(left);
         const rightWidth = visibleWidth(right);
