@@ -19,7 +19,7 @@ import {
   resolveEditorBorderTone,
 } from "../editor";
 import { formatModelLabel } from "./model-label";
-import { getUsageCostTotals } from "./usage-cost";
+import { recomputeUsageCostTotals } from "./usage-cost";
 import type { PiMixPrefs } from "../core/prefs";
 import { profileRender } from "../core/render-profiler";
 
@@ -117,7 +117,7 @@ function renderAutoCompactionStatus(theme: Theme, mode: AutoCompactionMode): str
 }
 
 export function buildUsageCostIndicator(theme: Theme, ctx: ExtensionContext): string {
-  return buildUsageCostIndicatorFromTotals(theme, getUsageCostTotals(ctx), {
+  return buildUsageCostIndicatorFromTotals(theme, recomputeUsageCostTotals(ctx), {
     usingSubscription: ctx.model ? ctx.modelRegistry.isUsingOAuth(ctx.model) : false,
   });
 }
